@@ -4,7 +4,7 @@ API 라우터 통합 모듈
 """
 
 from fastapi import APIRouter
-from api import bots
+from . import bots
 
 router = APIRouter()
 router.include_router(bots.router)
