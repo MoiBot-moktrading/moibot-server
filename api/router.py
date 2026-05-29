@@ -4,6 +4,7 @@ API 라우터 통합 모듈
 """
 
 from fastapi import APIRouter
+from api import bots
 
-# 메인 라우터 — main.py에서 prefix="/api/v1"로 include한다
 router = APIRouter()
+router.include_router(bots.router)
