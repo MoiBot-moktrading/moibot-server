@@ -6,7 +6,7 @@ Request(입력) / Response(출력) 용도로 분리한다.
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # ────────────────────────────────────────────────
@@ -15,9 +15,9 @@ from pydantic import BaseModel
 
 class BotCreate(BaseModel):
     """봇 생성 요청 모델"""
-    name: str
+    name: str = Field(min_length=1, max_length=50)
     strategy: str
-    symbol: str
+    symbol: str = Field(min_length=1)
 
 
 class BotResponse(BaseModel):
