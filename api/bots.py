@@ -50,3 +50,47 @@ async def create_bot(body: BotCreate) -> dict:
     except Exception as e:
         # DB 오류 발생 시 에러 응답
         return {"success": False, "data": None, "message": f"봇 생성 실패: {str(e)}"}
+
+
+@router.patch("/{bot_id}/start", response_model=dict)
+async def start_bot(bot_id: int) -> dict:
+    """봇 시작 — status를 running으로 변경"""
+    try:
+        async with get_db() as db:
+            cursor = await db.execute("SELECT id FROM bots WHERE id = ?", (bot_id,))
+            row = await cursor.fetchone()
+            if row is None:
+                return {"success": False, "data": None, "message": "봇을 찾을 수 없습니다"}
+
+            await db.execute(
+                "UPDATE bots SET status = 'running' WHERE id = ?", (bot_id,)
+            )
+            await db.commit()
+            cursor = await db.execute("SELECT * FROM bots WHERE id = ?", (bot_id,))
+            updated = await cursor.fetchone()
+
+        return {"success": True, "data": dict(updated), "message": "봇 시작됨"}
+    except Exception as e:
+        return {"success": False, "data": None, "message": f"봇 시작 실패: {str(e)}"}
+
+
+@router.patch("/{bot_id}/stop", response_model=dict)
+async def stop_bot(bot_id: int) -> dict:
+    """봇 중지 — status를 stopped로 변경"""
+    try:
+        async with get_db() as db:
+            cursor = await db.execute("SELECT id FROM bots WHERE id = ?", (bot_id,))
+            row = await cursor.fetchone()
+            if row is None:
+                return {"success": False, "data": None, "message": "봇을 찾을 수 없습니다"}
+
+            await db.execute(
+                "UPDATE bots SET status = 'stopped' WHERE id = ?", (bot_id,)
+            )
+            await db.commit()
+            cursor = await db.execute("SELECT * FROM bots WHERE id = ?", (bot_id,))
+            updated = await cursor.fetchone()
+
+        return {"success": True, "data": dict(updated), "message": "봇 중지됨"}
+    except Exception as e:
+        return {"success": False, "data": None, "message": f"봇 중지 실패: {str(e)}"}
