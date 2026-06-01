@@ -5,6 +5,7 @@
 from fastapi import APIRouter
 from db.database import get_db
 from db.models import BotCreate
+from bot.bot_manager import bot_manager
 
 router = APIRouter(prefix="/bots", tags=["bots"])
 
@@ -72,6 +73,7 @@ async def start_bot(bot_id: int) -> dict:
             if updated is None:
                 return {"success": False, "data": None, "message": "봇 업데이트 후 조회 실패"}
 
+        await bot_manager.start(bot_id)
         return {"success": True, "data": dict(updated), "message": "봇 시작됨"}
     except Exception as e:
         return {"success": False, "data": None, "message": f"봇 시작 실패: {str(e)}"}
@@ -97,6 +99,7 @@ async def stop_bot(bot_id: int) -> dict:
             if updated is None:
                 return {"success": False, "data": None, "message": "봇 업데이트 후 조회 실패"}
 
+        await bot_manager.stop(bot_id)
         return {"success": True, "data": dict(updated), "message": "봇 중지됨"}
     except Exception as e:
         return {"success": False, "data": None, "message": f"봇 중지 실패: {str(e)}"}

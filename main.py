@@ -12,15 +12,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db.database import init_db
 from api.router import router
+from bot.bot_manager import bot_manager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """앱 시작/종료 시 실행되는 lifespan 이벤트 핸들러"""
-    # 앱 시작: DB 테이블 초기화
+    # 앱 시작: DB 초기화 → 실행 중 봇 자동 재개
     await init_db()
+    await bot_manager.resume_running_bots()
     yield
-    # 앱 종료: 필요한 정리 작업 추가 가능
+    # 앱 종료: 모든 봇 중지
+    for bot_id in list(bot_manager._tasks.keys()):
+        await bot_manager.stop(bot_id)
 
 
 # FastAPI 앱 생성
@@ -49,5 +53,5 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,  # 개발 중 코드 변경 자동 반영
+        reload=True,
     )
