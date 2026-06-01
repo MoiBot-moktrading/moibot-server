@@ -69,6 +69,9 @@ async def start_bot(bot_id: int) -> dict:
             cursor = await db.execute("SELECT * FROM bots WHERE id = ?", (bot_id,))
             updated = await cursor.fetchone()
 
+            if updated is None:
+                return {"success": False, "data": None, "message": "봇 업데이트 후 조회 실패"}
+
         return {"success": True, "data": dict(updated), "message": "봇 시작됨"}
     except Exception as e:
         return {"success": False, "data": None, "message": f"봇 시작 실패: {str(e)}"}
@@ -90,6 +93,9 @@ async def stop_bot(bot_id: int) -> dict:
             await db.commit()
             cursor = await db.execute("SELECT * FROM bots WHERE id = ?", (bot_id,))
             updated = await cursor.fetchone()
+
+            if updated is None:
+                return {"success": False, "data": None, "message": "봇 업데이트 후 조회 실패"}
 
         return {"success": True, "data": dict(updated), "message": "봇 중지됨"}
     except Exception as e:
