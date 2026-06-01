@@ -3,6 +3,7 @@ FastAPI 애플리케이션 진입점
 앱 초기화, DB 셋업, 라우터 등록을 담당한다.
 """
 
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -14,6 +15,8 @@ from db.database import init_db
 from api.router import router
 from bot.bot_manager import bot_manager
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -24,7 +27,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
     # 앱 종료: 모든 봇 중지
     for bot_id in list(bot_manager._tasks.keys()):
-        await bot_manager.stop(bot_id)
+        try:
+            await bot_manager.stop(bot_id)
+        except Exception as e:
+            logger.error(f"봇 {bot_id} 종료 실패: {e}")
 
 
 # FastAPI 앱 생성
