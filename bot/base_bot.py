@@ -3,7 +3,7 @@
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from db.database import get_db
 from markets.base_market import BaseMarket
@@ -33,7 +33,7 @@ class TradingBot:
         self.market = market
         self.balance = balance
         self.position = position
-        self.initial_balance = INITIAL_BALANCE
+        self.initial_balance = balance
 
     async def run_once(self) -> None:
         """한 틱 실행 — OHLCV 조회 → 신호 계산 → 모의 주문 → DB 기록"""
@@ -64,7 +64,7 @@ class TradingBot:
         async with get_db() as db:
             await db.execute(
                 "INSERT INTO trades (bot_id, side, price, amount, executed_at) VALUES (?, ?, ?, ?, ?)",
-                (self.bot_id, "buy", price, amount, datetime.utcnow()),
+                (self.bot_id, "buy", price, amount, datetime.now(timezone.utc)),
             )
             await db.commit()
         logger.info(f"봇 {self.bot_id} 매수: {amount:.6f} @ {price:,.0f}")
@@ -79,7 +79,7 @@ class TradingBot:
         async with get_db() as db:
             await db.execute(
                 "INSERT INTO trades (bot_id, side, price, amount, executed_at) VALUES (?, ?, ?, ?, ?)",
-                (self.bot_id, "sell", price, sold_amount, datetime.utcnow()),
+                (self.bot_id, "sell", price, sold_amount, datetime.now(timezone.utc)),
             )
             await db.commit()
         logger.info(f"봇 {self.bot_id} 매도: {sold_amount:.6f} @ {price:,.0f}")
@@ -92,6 +92,6 @@ class TradingBot:
         async with get_db() as db:
             await db.execute(
                 "INSERT INTO portfolio_snapshots (bot_id, balance, position, pnl, snapshot_at) VALUES (?, ?, ?, ?, ?)",
-                (self.bot_id, self.balance, self.position, pnl, datetime.utcnow()),
+                (self.bot_id, self.balance, self.position, pnl, datetime.now(timezone.utc)),
             )
             await db.commit()
