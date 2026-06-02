@@ -4,7 +4,9 @@ API 라우터 통합 모듈
 """
 
 from fastapi import APIRouter
-from api import bots
+from api import bots, portfolio, trades
 
 router = APIRouter()
 router.include_router(bots.router)
+router.include_router(portfolio.router)
+router.include_router(trades.router)
