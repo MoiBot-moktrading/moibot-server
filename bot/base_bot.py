@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 from db.database import get_db
 from markets.base_market import BaseMarket
+from notifier.discord import notify_trade
 from strategies.base_strategy import BaseStrategy, Signal
 
 logger = logging.getLogger(__name__)
@@ -68,6 +69,7 @@ class TradingBot:
             )
             await db.commit()
         logger.info(f"봇 {self.bot_id} 매수: {amount:.6f} @ {price:,.0f}")
+        await notify_trade("buy", self.bot_id, self.symbol, price, amount)
 
     async def _sell(self, price: float) -> None:
         """모의 매도"""
@@ -83,6 +85,9 @@ class TradingBot:
             )
             await db.commit()
         logger.info(f"봇 {self.bot_id} 매도: {sold_amount:.6f} @ {price:,.0f}")
+        # 매도 시 현재 손익 = 잔고 - 초기 잔고 (포지션 0이므로 총 자산 = 잔고)
+        current_pnl = self.balance - self.initial_balance
+        await notify_trade("sell", self.bot_id, self.symbol, price, sold_amount, pnl=current_pnl)
 
     async def _save_snapshot(self, current_price: float) -> None:
         """포트폴리오 스냅샷 저장"""
