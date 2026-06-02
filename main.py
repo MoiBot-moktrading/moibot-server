@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db.database import init_db
 from api.router import router
+from api.ws import router as ws_router
 from bot.bot_manager import bot_manager
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,8 @@ app.add_middleware(
 
 # API 라우터 등록
 app.include_router(router, prefix="/api/v1")
+# WebSocket 라우터 등록
+app.include_router(ws_router, prefix="/ws")
 
 
 if __name__ == "__main__":
